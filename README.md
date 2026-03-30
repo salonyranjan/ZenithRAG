@@ -135,3 +135,6 @@ Access the UI at http://localhost:8080
     AWS_ECR_LOGIN_URI = demo>>  566373416292.dkr.ecr.ap-south-1.amazonaws.com
 
     ECR_REPOSITORY_NAME = simple-app
+
+## 🎓 Academic Credit
+Developer: Salony Ranjan	

@@ -65,7 +65,7 @@ open up you local host and port
 
 	
 ## 3. Create ECR repo to store/save docker image
-    - Save the URI: 315865595366.dkr.ecr.us-east-1.amazonaws.com/rag
+    - Save the URI:577435557871.dkr.ecr.eu-north-1.amazonaws.com/zenithrag
 
 	
 ## 4. Create EC2 machine (Ubuntu) 

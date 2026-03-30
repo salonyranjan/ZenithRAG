@@ -10,10 +10,10 @@ permissions:
   contents: read
 
 env:
-  # 2026 Standards: Use Node 24 for runners
+  # 2026 Runner Standard
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
   AWS_REGION: eu-north-1
-  # HARDCODED URI: This is the most stable way to handle self-hosted runners
+  # EXPLICIT URI: This fixes the 'invalid reference format' (/***:) error forever
   ECR_IMAGE_URI: 577435557871.dkr.ecr.eu-north-1.amazonaws.com/zenithrag:latest
 
 jobs:
@@ -72,14 +72,14 @@ jobs:
       
       - name: Pull and Restart Container
         run: |
-         # 1. Pull using the explicit URI from the global 'env'
+         # 1. Pull using the global explicit URI (Fixes the failure in your screenshot)
          docker pull ${{ env.ECR_IMAGE_URI }}
          
-         # 2. Stop and Clean up old container (don't fail if none exist)
+         # 2. Stop and Clean up old container (won't fail if none exist)
          docker stop zenithrag || true 
          docker rm zenithrag || true
          
-         # 3. Deploy ZenithRAG with Groq and AWS context
+         # 3. Deploy ZenithRAG with required secrets
          docker run -d -p 8080:8080 --name=zenithrag \
          -e 'AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}' \
          -e 'AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}' \

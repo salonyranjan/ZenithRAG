@@ -10,10 +10,10 @@ permissions:
   contents: read
 
 env:
-  # 2026 Runner Standards
+  # 2026 Standards: Use Node 24 for runners
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
   AWS_REGION: eu-north-1
-  # Hardcoded URI to prevent the "Empty Variable" error (/***:)
+  # HARDCODED URI: This is the most stable way to handle self-hosted runners
   ECR_IMAGE_URI: 577435557871.dkr.ecr.eu-north-1.amazonaws.com/zenithrag:latest
 
 jobs:
@@ -72,14 +72,14 @@ jobs:
       
       - name: Pull and Restart Container
         run: |
-         # Pull using the explicit URI defined in 'env'
+         # 1. Pull using the explicit URI from the global 'env'
          docker pull ${{ env.ECR_IMAGE_URI }}
          
-         # Clean up old container
+         # 2. Stop and Clean up old container (don't fail if none exist)
          docker stop zenithrag || true 
          docker rm zenithrag || true
          
-         # Deploy with required RAG secrets
+         # 3. Deploy ZenithRAG with Groq and AWS context
          docker run -d -p 8080:8080 --name=zenithrag \
          -e 'AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}' \
          -e 'AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}' \

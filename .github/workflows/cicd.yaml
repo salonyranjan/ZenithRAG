@@ -82,7 +82,7 @@ jobs:
          docker stop zenithrag || true 
          docker rm zenithrag || true
          
-         # 3. Deploy ZenithRAG with required secrets
+         # 3. Deploy ZenithRAG with your specific keys
          docker run -d -p 8080:8080 --name=zenithrag \
          -e 'AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}' \
          -e 'AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}' \

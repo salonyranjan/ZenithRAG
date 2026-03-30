@@ -10,10 +10,10 @@ permissions:
   contents: read
 
 env:
-  # Opt-in to Node 24 for 2026 Runner Standards
+  # 2026 Runner Standards
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
   AWS_REGION: eu-north-1
-  # HARDCODED URI: This prevents the "invalid reference format" error
+  # Explicit URI to prevent the "invalid reference format" error
   ECR_IMAGE_URI: 577435557871.dkr.ecr.eu-north-1.amazonaws.com/zenithrag:latest
 
 jobs:

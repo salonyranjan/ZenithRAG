@@ -49,13 +49,13 @@ Open your terminal and create a dedicated Conda environment:
 conda create -n zenith_env python=3.11 -y
 conda activate zenith_env
 ```
-### **STEP 02: Install Requirements
+### **STEP 02: Install Requirements**
 Install the core RAG dependencies:
 
 ```bash
 pip install -r requirements.txt
 ```
-### **STEP 03: Run Locally
+### **STEP 03: Run Locally**
 Launch the application on your localhost:
 
 ```bash
@@ -64,14 +64,14 @@ python app/main.py
 Access the UI at http://localhost:8080
 
 ## 🚀 AWS CI/CD Deployment Guide
-### **1. IAM Configuration
+### **1. IAM Configuration**
 Create an IAM user for deployment with the following policies:
 
 AmazonEC2ContainerRegistryFullAccess
 
 AmazonEC2FullAccess
 
-### **2. EC2 Environment Setup (Ubuntu 22.04)
+### **2. EC2 Environment Setup (Ubuntu 22.04)**
 Install the Docker engine on your Stockholm instance:
 
 ```bash
@@ -80,11 +80,11 @@ curl -fsSL [https://get.docker.com](https://get.docker.com) -o get-docker.sh
 sudo sh get-docker.sh
 sudo usermod -aG docker ubuntu && newgrp docker
 ```
-### **3. GitHub Self-Hosted Runner
+### **3. GitHub Self-Hosted Runner**
 Configure your EC2 as a runner:
 Settings > Actions > Runners > New self-hosted runner (Follow the provided Ubuntu instructions).
 
-### **4. GitHub Secrets Setup
+### **4. GitHub Secrets Setup**
 Add the following secrets to your repository:
 
 AWS_ACCESS_KEY_ID: Your IAM Access Key

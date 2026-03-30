@@ -10,10 +10,10 @@ permissions:
   contents: read
 
 env:
-  # Opt-in to Node 24 for 2026 Runner Standards
+  # 2026 Runner Standards
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
   AWS_REGION: eu-north-1
-  # Explicit URI to prevent "Empty Variable" pull errors
+  # Hardcoding the full URI prevents the "Empty Variable" pull error
   ECR_IMAGE_URI: 577435557871.dkr.ecr.eu-north-1.amazonaws.com/zenithrag:latest
 
 jobs:
@@ -24,7 +24,7 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
       - name: Environment Check
-        run: echo "Validating ZenithRAG Environment for Stockholm Deployment..."
+        run: echo "Validating ZenithRAG Environment..."
 
   build-and-push-ecr-image:
     name: Continuous Delivery
@@ -72,14 +72,14 @@ jobs:
       
       - name: Pull and Restart Container
         run: |
-         # 1. Pull the image using the explicit URI
+         # Pull using the explicit hardcoded URI
          docker pull ${{ env.ECR_IMAGE_URI }}
          
-         # 2. Stop and Clean up old container (don't fail if it doesn't exist)
+         # Clean up old container
          docker stop zenithrag || true 
          docker rm zenithrag || true
          
-         # 3. Deploy with Groq and AWS context
+         # Deploy with required RAG secrets
          docker run -d -p 8080:8080 --name=zenithrag \
          -e 'AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}' \
          -e 'AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}' \

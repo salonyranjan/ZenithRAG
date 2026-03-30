@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ZenithRAG | AI Knowledge Hub</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;700&display=swap" rel="stylesheet">
+    
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
+    <style>
+        :root {
+            --bg-dark: #0f172a;
+            --glass: rgba(30, 41, 59, 0.7);
+            --accent: #8b5cf6; 
+            --accent-glow: rgba(139, 92, 246, 0.3);
+            --text-main: #f1f5f9;
+            --text-dim: #94a3b8;
+            --ai-bubble: #1e293b;
+            --user-bubble: linear-gradient(135deg, #7c3aed, #3b82f6);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', sans-serif; }
+        body { background: var(--bg-dark); color: var(--text-main); height: 100vh; overflow: hidden; display: flex; }
+
+        /* --- Sidebar --- */
+        .sidebar {
+            width: 320px;
+            background: var(--glass);
+            backdrop-filter: blur(10px);
+            border-right: 1px solid rgba(255,255,255,0.1);
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+        }
+
+        .logo { font-size: 1.5rem; font-weight: 700; color: #fff; display: flex; align-items: center; gap: 10px; }
+        .logo span { color: var(--accent); }
+
+        .card {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.05);
+            padding: 1.5rem;
+            border-radius: 16px;
+        }
+
+        h3 { font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px; color: var(--accent); margin-bottom: 1rem; }
+
+        /* --- File Upload --- */
+        .file-drop-zone {
+            border: 2px dashed rgba(255,255,255,0.1);
+            border-radius: 12px;
+            padding: 1.5rem;
+            text-align: center;
+            cursor: pointer;
+            transition: 0.3s;
+            font-size: 0.85rem;
+        }
+        .file-drop-zone:hover { border-color: var(--accent); background: var(--accent-glow); }
+        input[type="file"] { display: none; }
+        
+        .btn-primary {
+            background: var(--accent);
+            color: white;
+            border: none;
+            padding: 0.8rem;
+            border-radius: 10px;
+            width: 100%;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 1rem;
+            box-shadow: 0 4px 15px var(--accent-glow);
+            transition: 0.3s;
+        }
+        .btn-primary:hover { transform: translateY(-2px); filter: brightness(1.1); }
+
+        /* --- Chat Window Fixes --- */
+        .main-chat { flex: 1; display: flex; flex-direction: column; position: relative; }
+
+        .chat-window {
+            flex: 1;
+            padding: 2rem;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .message {
+            max-width: 85%; /* Wider for technical data */
+            padding: 1rem 1.4rem;
+            border-radius: 18px;
+            line-height: 1.6;
+            animation: fadeIn 0.4s ease forwards;
+            word-wrap: break-word;
+        }
+
+        /* Rendering lists inside AI bubbles */
+        .ai-message ul, .ai-message ol { margin-left: 20px; padding: 5px 0; }
+        .ai-message li { margin-bottom: 5px; }
+        .ai-message h3 { margin-top: 10px; color: white; text-transform: none; }
+
+        .ai-message { 
+            background: var(--ai-bubble); 
+            align-self: flex-start; 
+            border-bottom-left-radius: 2px; 
+            border: 1px solid rgba(255,255,255,0.05); 
+        }
+        
+        .user-message { 
+            background: var(--user-bubble); 
+            align-self: flex-end; 
+            border-bottom-right-radius: 2px; 
+        }
+
+        /* --- Input Bar --- */
+        .input-wrapper { padding: 2rem; background: linear-gradient(transparent, var(--bg-dark) 40%); }
+
+        .input-box {
+            background: #1e293b;
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            padding: 0.5rem 1rem;
+            gap: 1rem;
+        }
+
+        input[type="text"] { background: transparent; border: none; color: white; flex: 1; padding: 0.8rem; outline: none; font-size: 1rem; }
+
+        .send-btn {
+            background: var(--accent);
+            border: none;
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            cursor: pointer;
+            color: white;
+            font-size: 1.2rem;
+        }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* --- Typing --- */
+        .typing { display: flex; gap: 5px; padding: 10px; }
+        .dot { width: 8px; height: 8px; background: var(--accent); border-radius: 50%; animation: bounce 1.4s infinite ease-in-out; }
+        .dot:nth-child(2) { animation-delay: -0.16s; }
+        @keyframes bounce { 0%, 80%, 100% { transform: scale(0); } 40% { transform: scale(1); } }
+
+    </style>
+</head>
+<body>
+
+    <aside class="sidebar">
+        <div class="logo">🚀 Zenith<span>RAG</span></div>
+        
+        <div class="card">
+            <h3>Knowledge Base</h3>
+            <label class="file-drop-zone" for="file-input">
+                <p id="file-label-text">Click to upload PDF/TXT</p>
+                <input type="file" id="file-input" accept=".pdf,.txt">
+            </label>
+            <button class="btn-primary" id="upload-btn">Sync to Brain</button>
+        </div>
+
+        <div class="card">
+            <h3>System Info</h3>
+            <p style="font-size: 0.8rem; color: var(--text-dim); line-height: 1.5;">
+                Level-3 Architecture<br>
+                Vector Store: <strong>FAISS</strong><br>
+                Storage: <strong>S3 Stockholm</strong><br>
+                LPU: <strong>Groq Engine</strong>
+            </p>
+        </div>
+        
+        <button id="clear-btn" style="background:none; border: 1px solid rgba(255,255,255,0.1); color: var(--text-dim); padding: 10px; border-radius: 8px; cursor: pointer; margin-top: auto;">Clear Memory</button>
+    </aside>
+
+    <main class="main-chat">
+        <header style="padding: 1.5rem 2rem; border-bottom: 1px solid rgba(255,255,255,0.05);">
+            <h2 style="font-size: 1.1rem;">AI Knowledge Assistant</h2>
+            <span style="font-size: 0.75rem; color: #22c55e;">● Online | Context Active</span>
+        </header>
+
+        <div class="chat-window" id="chat-window">
+            <div class="message ai-message">
+                Welcome, <strong>Salony</strong>! I am ready to process your documents. Upload a file to the left to begin our Level-3 session.
+            </div>
+        </div>
+
+        <div class="input-wrapper">
+            <div class="input-box">
+                <input type="text" id="user-input" placeholder="Ask your knowledge base anything..." autocomplete="off">
+                <button class="send-btn" id="send-btn">➔</button>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        const chatWindow = document.getElementById('chat-window');
+        const fileInput = document.getElementById('file-input');
+        const fileLabel = document.getElementById('file-label-text');
+
+        // Update filename UI
+        fileInput.onchange = () => {
+            if(fileInput.files[0]) fileLabel.textContent = fileInput.files[0].name;
+        };
+
+        // 2. Modified Message Function: Uses Marked.js for AI responses
+        function addMessage(role, text) {
+            const div = document.createElement('div');
+            div.className = `message ${role}-message`;
+            
+            if (role === 'ai') {
+                // Parse markdown to HTML
+                div.innerHTML = marked.parse(text);
+            } else {
+                div.textContent = text;
+            }
+            
+            chatWindow.appendChild(div);
+            chatWindow.scrollTo({ top: chatWindow.scrollHeight, behavior: 'smooth' });
+        }
+
+        function showTyping() {
+            const div = document.createElement('div');
+            div.className = 'message ai-message';
+            div.id = 'typing-indicator';
+            div.innerHTML = '<div class="typing"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>';
+            chatWindow.appendChild(div);
+            chatWindow.scrollTop = chatWindow.scrollHeight;
+        }
+
+        // Upload Logic
+        document.getElementById('upload-btn').onclick = async () => {
+            if(!fileInput.files[0]) return alert("Select a file!");
+            const btn = document.getElementById('upload-btn');
+            btn.disabled = true;
+            btn.textContent = "Syncing...";
+
+            const formData = new FormData();
+            formData.append('file', fileInput.files[0]);
+
+            try {
+                const res = await fetch('/upload', { method: 'POST', body: formData });
+                const data = await res.json();
+                alert(data.message);
+            } catch (e) {
+                alert("Upload error.");
+            } finally {
+                btn.disabled = false;
+                btn.textContent = "Sync to Brain";
+            }
+        };
+
+        // Chat Query Logic
+        async function sendMessage() {
+            const input = document.getElementById('user-input');
+            const question = input.value.trim();
+            if(!question) return;
+
+            addMessage('user', question);
+            input.value = '';
+            showTyping();
+
+            try {
+                const res = await fetch('/query', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ question })
+                });
+                const data = await res.json();
+                
+                if(document.getElementById('typing-indicator')) document.getElementById('typing-indicator').remove();
+                addMessage('ai', data.response || data.message);
+            } catch (e) {
+                if(document.getElementById('typing-indicator')) document.getElementById('typing-indicator').remove();
+                addMessage('ai', "Error connecting to Groq LPU engine.");
+            }
+        }
+
+        document.getElementById('send-btn').onclick = sendMessage;
+        document.getElementById('user-input').onkeypress = (e) => { if(e.key === 'Enter') sendMessage(); };
+
+        document.getElementById('clear-btn').onclick = async () => {
+            await fetch('/clear', {method: 'POST'});
+            chatWindow.innerHTML = '<div class="message ai-message">Memory reset. How can I help you now?</div>';
+        };
+    </script>
+</body>
+</html>

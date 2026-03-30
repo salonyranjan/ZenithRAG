@@ -63,36 +63,75 @@ python app/main.py
 ```
 Access the UI at http://localhost:8080
 
-## 🚀 AWS CI/CD Deployment Guide
-### **1. IAM Configuration**
-Create an IAM user for deployment with the following policies:
+## 🚀 # AWS-CICD-Deployment-with-Github-Actions
 
-AmazonEC2ContainerRegistryFullAccess
+## 1. Login to AWS console.
 
-AmazonEC2FullAccess
+## 2. Create IAM user for deployment
 
-### **2. EC2 Environment Setup (Ubuntu 22.04)**
-Install the Docker engine on your Stockholm instance:
+	#with specific access
 
-```bash
-sudo apt-get update -y
-curl -fsSL [https://get.docker.com](https://get.docker.com) -o get-docker.sh
-sudo sh get-docker.sh
-sudo usermod -aG docker ubuntu && newgrp docker
-```
-### **3. GitHub Self-Hosted Runner**
-Configure your EC2 as a runner:
-Settings > Actions > Runners > New self-hosted runner (Follow the provided Ubuntu instructions).
+	1. EC2 access : It is virtual machine
 
-### **4. GitHub Secrets Setup**
-Add the following secrets to your repository:
+	2. ECR: Elastic Container registry to save your docker image in aws
 
-AWS_ACCESS_KEY_ID: Your IAM Access Key
 
-AWS_SECRET_ACCESS_KEY: Your IAM Secret Key
+	#Description: About the deployment
 
-AWS_REGION: eu-north-1
+	1. Build docker image of the source code
 
-GROQ_API_KEY: Your Groq API Key
+	2. Push your docker image to ECR
 
-OPENAI_API_KEY: Your OpenAI API Key
+	3. Launch Your EC2 
+
+	4. Pull Your image from ECR in EC2
+
+	5. Lauch your docker image in EC2
+
+	#Policy:
+
+	1. AmazonEC2ContainerRegistryFullAccess
+
+	2. AmazonEC2FullAccess
+
+	
+## 3. Create ECR repo to store/save docker image
+    - Save the URI: 315865595366.dkr.ecr.us-east-1.amazonaws.com/rag
+
+	
+## 4. Create EC2 machine (Ubuntu) 
+
+## 5. Open EC2 and Install docker in EC2 Machine:
+	
+	
+	#optinal
+
+	sudo apt-get update -y
+
+	sudo apt-get upgrade
+	
+	#required
+
+	curl -fsSL https://get.docker.com -o get-docker.sh
+
+	sudo sh get-docker.sh
+
+	sudo usermod -aG docker ubuntu
+
+	newgrp docker
+	
+# 6. Configure EC2 as self-hosted runner:
+    setting>actions>runner>new self hosted runner> choose os> then run command one by one
+
+
+# 7. Setup github secrets:
+
+    AWS_ACCESS_KEY_ID=
+
+    AWS_SECRET_ACCESS_KEY=
+
+    AWS_REGION = us-east-1
+
+    AWS_ECR_LOGIN_URI = demo>>  566373416292.dkr.ecr.ap-south-1.amazonaws.com
+
+    ECR_REPOSITORY_NAME = simple-app

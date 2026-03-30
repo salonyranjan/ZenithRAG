@@ -10,9 +10,11 @@ permissions:
   contents: read
 
 env:
-  # Opt-in to Node 24 to clear deprecation warnings for 2026
+  # Opt-in to Node 24 for 2026 Runner Standards
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
   AWS_REGION: eu-north-1
+  # Explicit URI to prevent "Empty Variable" pull errors
+  ECR_IMAGE_URI: 577435557871.dkr.ecr.eu-north-1.amazonaws.com/zenithrag:latest
 
 jobs:
   integration:
@@ -21,9 +23,8 @@ jobs:
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
-
-      - name: Lint & Environment Check
-        run: echo "Validating ZenithRAG Environment..."
+      - name: Environment Check
+        run: echo "Validating ZenithRAG Environment for Stockholm Deployment..."
 
   build-and-push-ecr-image:
     name: Continuous Delivery
@@ -47,17 +48,9 @@ jobs:
           mask-password: 'true'
 
       - name: Build and Push Image
-        id: build-image
-        env:
-          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-          # Using the exact name verified from your ECR URI
-          ECR_REPOSITORY: zenithrag 
-          IMAGE_TAG: latest
         run: |
-          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
-          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
-          # Save image URI for the deployment step
-          echo "image=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" >> $GITHUB_OUTPUT
+          docker build -t ${{ env.ECR_IMAGE_URI }} .
+          docker push ${{ env.ECR_IMAGE_URI }}
           
   Continuous-Deployment:
     name: Continuous Deployment
@@ -75,25 +68,24 @@ jobs:
           aws-region: ${{ env.AWS_REGION }}
 
       - name: Login to Amazon ECR
-        id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2
       
       - name: Pull and Restart Container
         run: |
-         # Pull fresh image from Stockholm ECR
-         docker pull ${{ steps.login-ecr.outputs.registry }}/zenithrag:latest
+         # 1. Pull the image using the explicit URI
+         docker pull ${{ env.ECR_IMAGE_URI }}
          
-         # Stop existing container to avoid port conflict (doesn't fail if none exist)
+         # 2. Stop and Clean up old container (don't fail if it doesn't exist)
          docker stop zenithrag || true 
          docker rm zenithrag || true
          
-         # Deploy ZenithRAG with Groq and AWS context
+         # 3. Deploy with Groq and AWS context
          docker run -d -p 8080:8080 --name=zenithrag \
          -e 'AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}' \
          -e 'AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}' \
          -e 'AWS_REGION=${{ env.AWS_REGION }}' \
          -e 'GROQ_API_KEY=${{ secrets.GROQ_API_KEY }}' \
-         ${{ steps.login-ecr.outputs.registry }}/zenithrag:latest
+         ${{ env.ECR_IMAGE_URI }}
 
       - name: System Cleanup
         run: docker system prune -f
